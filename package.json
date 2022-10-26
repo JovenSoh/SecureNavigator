@@ -1,22 +1,27 @@
 {
-  "name": "js",
+  "name": "vulncheck",
   "displayName": "VulnCheck",
   "description": "Black",
   "version": "0.0.1",
+  "publisher": "pokerspine",
   "engines": {
     "vscode": "^1.72.0"
   },
   "categories": [
     "Other"
   ],
+  "languages": [{
+    "id": "javascript",
+    "extensions": [".js", ".jsx"]
+  }],
   "activationEvents": [
-    "onCommand:js.helloWorld"
+    "onLanguage:javascript"
   ],
   "main": "./extension.js",
   "contributes": {
     "commands": [{
-      "command": "js.helloWorld",
-      "title": "Hello World"
+      "command": "vulnCheck.runCheck",
+      "title": "Test Command"
     }]
   },
   "scripts": {
