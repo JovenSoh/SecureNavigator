@@ -1,0 +1,7 @@
+query
+query1
+query2
+query3
+stmt
+statement
+sql
