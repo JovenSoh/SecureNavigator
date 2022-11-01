@@ -12,7 +12,7 @@ const vscode = require('vscode');
 // Called when the activation event occurs (which is calling the command in this case)
 function activate(context) {
 
-	const SQLiRegex = /(SELECT|INSERT).*(?=\+|(\${))/g
+	const SQLiRegex = /(SELECT|INSERT).*(?=\+|(\${))/
 
 	try {
 		// Use the console to output diagnostic information (console.log) and errors (console.error)
@@ -20,7 +20,7 @@ function activate(context) {
 		console.log('Congratulations, detected JS file, activating...');
 
 		const SQLWarningDecorationType = vscode.window.createTextEditorDecorationType({
-			
+
 			borderStyle: 'solid',
 			light: {
 				// this color will be used in light color themes
@@ -34,16 +34,8 @@ function activate(context) {
 			}
 		})
 
-		// ID we will use for Activation Event, Contribution Point and below: "js.testCommand"
-		// Activation Event: Events which activate the extension (else it sleeps)
-		// Contribution Point: Adds it to the Command Pallete list
-		// registerCommand() binds the following function to the command ID
-		let disposable = vscode.commands.registerCommand('vulnCheck.runCheck', function () {
-			// The code you place here will be executed every time your command is executed
-
-			// Display a message box to the user
-			vscode.window.showInformationMessage('Running Check!');
-		});
+		const collection = vscode.languages.createDiagnosticCollection('sqli-detector');
+		context.subscriptions.push(collection)
 
 		vscode.workspace.onDidChangeTextDocument(() => {
 
@@ -52,34 +44,66 @@ function activate(context) {
 				const currentLine = activeEditor.selection.active.line
 				const contents = activeEditor.document.lineAt(currentLine)._text
 
-				if (SQLiRegex.test(contents)) {
-					
+				const test = SQLiRegex.test(contents)
+				console.log(test)
+				console.log(contents)
+				if (test) {
+
 					const range = new vscode.Range(new vscode.Position(currentLine, 0), new vscode.Position(currentLine, contents.length))
-					const decorator = [{range: range, hoverMessage: "Possible SQL Injection detected - Unsanitized Input"}]
+					const decorator = [{ range: range }]
 					let noError = true
 					try {
 						new Function(contents)
 					}
 					catch (e) {
 						if (e.name !== "SyntaxError") {
-
-							console.log(contents)
 							activeEditor.setDecorations(SQLWarningDecorationType, decorator)
+
+							collection.set(activeEditor.document.uri, [{
+								code: '',
+								message: 'Possible SQLi detected',
+								range: range,
+								severity: vscode.DiagnosticSeverity.Warning,
+								source: '',
+								relatedInformation: [
+									new vscode.DiagnosticRelatedInformation(new vscode.Location(activeEditor.document.uri, range), ' has a possible SQLi')
+								]
+							}]);
+
+							const fix = new vscode.CodeAction(`Fix SQLi!`, vscode.CodeActionKind.QuickFix);
+							fix.edit = new vscode.WorkspaceEdit();
+							fix.edit.replace(activeEditor.document.uri, range, 'hello world!');
 						}
 						noError = false
 					}
 
 					if (noError) {
-						console.log(contents)
-						console.log(decorator)
 						activeEditor.setDecorations(SQLWarningDecorationType, decorator)
 
+						collection.set(activeEditor.document.uri, [{
+							code: 'vulncheck_codeaction',
+							message: 'Possible SQLi detected',
+							range: range,
+							severity: vscode.DiagnosticSeverity.Warning,
+							source: '',
+							relatedInformation: [
+								new vscode.DiagnosticRelatedInformation(new vscode.Location(activeEditor.document.uri, range), ' has a possible SQLi')
+							]
+						}]);
 					}
+				}
+				else {
+					collection.clear()
+					activeEditor.setDecorations(SQLWarningDecorationType, [{ range: null }])
 				}
 			}
 		})
 
-		context.subscriptions.push(disposable);
+		context.subscriptions.push(
+			vscode.languages.registerCodeActionsProvider('javascript', new Emojizer(), {
+				providedCodeActionKinds: Emojizer.providedCodeActionKinds
+			})
+		);
 	}
 	catch (e) {
 		console.log(e)
@@ -89,6 +113,28 @@ function activate(context) {
 // This method is called when your extension is deactivated (only when vscode shuts down)
 function deactivate() {
 	console.log("Deactivating")
+}
+
+class Emojizer {
+
+	static providedCodeActionKinds = [
+		vscode.CodeActionKind.QuickFix
+	];
+
+
+	provideCodeActions(document, range) {
+		// It seems like this function is called inside the provider whenever a dianostics problem is raised
+		// the range and document are passed from the diagnostics 
+		const fix = new vscode.CodeAction(`Fix SQLi!`, vscode.CodeActionKind.QuickFix);
+		fix.edit = new vscode.WorkspaceEdit();
+		fix.edit.replace(document.uri, range, 'hello world!');
+
+		return [
+			fix
+		];
+	}
+
+
 }
 
 module.exports = {
