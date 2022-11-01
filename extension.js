@@ -12,46 +12,76 @@ const vscode = require('vscode');
 // Called when the activation event occurs (which is calling the command in this case)
 function activate(context) {
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, detected JS file, activating...');
+	try {
+		// Use the console to output diagnostic information (console.log) and errors (console.error)
+		// This line of code will only be executed once when your extension is activated
+		console.log('Congratulations, detected JS file, activating...');
 
-	// ID we will use for Activation Event, Contribution Point and below: "js.testCommand"
-	// Activation Event: Events which activate the extension (else it sleeps)
-	// Contribution Point: Adds it to the Command Pallete list
-	// registerCommand() binds the following function to the command ID
-	let disposable = vscode.commands.registerCommand('vulnCheck.runCheck', function () {
-		// The code you place here will be executed every time your command is executed
+		const SQLWarningDecorationType = vscode.window.createTextEditorDecorationType({
+			
+			borderStyle: 'solid',
+			light: {
+				// this color will be used in light color themes
+				borderColor: 'darkblue',
+				backgroundColor: 'rgba(149, 0, 0, 0.61)'
+			},
+			dark: {
+				// this color will be used in dark color themes
+				borderColor: 'lightblue',
+				backgroundColor: 'rgba(229, 0, 0, 0.61)'
+			}
+		})
 
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Running Check!');
-	});
+		// ID we will use for Activation Event, Contribution Point and below: "js.testCommand"
+		// Activation Event: Events which activate the extension (else it sleeps)
+		// Contribution Point: Adds it to the Command Pallete list
+		// registerCommand() binds the following function to the command ID
+		let disposable = vscode.commands.registerCommand('vulnCheck.runCheck', function () {
+			// The code you place here will be executed every time your command is executed
 
-	vscode.workspace.onDidChangeTextDocument(() => {
+			// Display a message box to the user
+			vscode.window.showInformationMessage('Running Check!');
+		});
 
-		const activeEditor = vscode.window.activeTextEditor
-		if (activeEditor) {
-			const contents = activeEditor.document.lineAt(activeEditor.selection.active.line)._text
-			if (contents.indexOf("SELECT") !== -1) {
-				let noError = true
-				try {
-					new Function(contents)
-				}
-				catch (e) {
-					if (e.name !== "SyntaxError") {
-						console.log(contents)
+		vscode.workspace.onDidChangeTextDocument(() => {
+
+			const activeEditor = vscode.window.activeTextEditor
+			if (activeEditor) {
+				const currentLine = activeEditor.selection.active.line
+				const contents = activeEditor.document.lineAt(currentLine)._text
+
+				if (contents.indexOf("SELECT") !== -1) {
+
+					const range = new vscode.Range(new vscode.Position(currentLine, 0), new vscode.Position(currentLine, contents.length))
+					const decorator = [{range: range, hoverMessage: "Possible SQLi detected!"}]
+					let noError = true
+					try {
+						new Function(contents)
 					}
-					noError = false
-				}
+					catch (e) {
+						if (e.name !== "SyntaxError") {
 
-				if (noError) {
-					console.log(contents)
+							console.log(contents)
+							activeEditor.setDecorations(SQLWarningDecorationType, decorator)
+						}
+						noError = false
+					}
+
+					if (noError) {
+						console.log(contents)
+						console.log(decorator)
+						activeEditor.setDecorations(SQLWarningDecorationType, decorator)
+
+					}
 				}
 			}
-		}
-	})
+		})
 
-	context.subscriptions.push(disposable);
+		context.subscriptions.push(disposable);
+	}
+	catch (e) {
+		console.log(e)
+	}
 }
 
 // This method is called when your extension is deactivated (only when vscode shuts down)
