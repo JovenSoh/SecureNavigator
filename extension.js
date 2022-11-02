@@ -9,6 +9,28 @@ const vscode = require('vscode');
  * @param {vscode.ExtensionContext} context
  */
 
+ class Emojizer {
+
+	static providedCodeActionKinds = [
+		vscode.CodeActionKind.QuickFix
+	];
+
+
+	provideCodeActions(document, range) {
+		// It seems like this function is called inside the provider whenever a dianostics problem is raised
+		// the range and document are passed from the diagnostics 
+		const fix = new vscode.CodeAction(`Fix SQLi!`, vscode.CodeActionKind.QuickFix);
+		fix.edit = new vscode.WorkspaceEdit();
+		fix.edit.replace(document.uri, range, 'hello world!');
+
+		return [
+			fix
+		];
+	}
+
+
+}
+
 // Called when the activation event occurs (which is calling the command in this case)
 function activate(context) {
 
@@ -17,7 +39,7 @@ function activate(context) {
 	try {
 		// Use the console to output diagnostic information (console.log) and errors (console.error)
 		// This line of code will only be executed once when your extension is activated
-		console.log('Congratulations, detected JS file, activating...');
+		console.log('Detected JS file, activating...');
 
 		const SQLWarningDecorationType = vscode.window.createTextEditorDecorationType({
 
@@ -43,11 +65,8 @@ function activate(context) {
 			if (activeEditor) {
 				const currentLine = activeEditor.selection.active.line
 				const contents = activeEditor.document.lineAt(currentLine)._text
-
-				const test = SQLiRegex.test(contents)
-				console.log(test)
-				console.log(contents)
-				if (test) {
+				
+				if (SQLiRegex.test(contents)) {
 
 					const range = new vscode.Range(new vscode.Position(currentLine, 0), new vscode.Position(currentLine, contents.length))
 					const decorator = [{ range: range }]
@@ -69,10 +88,6 @@ function activate(context) {
 									new vscode.DiagnosticRelatedInformation(new vscode.Location(activeEditor.document.uri, range), ' has a possible SQLi')
 								]
 							}]);
-
-							const fix = new vscode.CodeAction(`Fix SQLi!`, vscode.CodeActionKind.QuickFix);
-							fix.edit = new vscode.WorkspaceEdit();
-							fix.edit.replace(activeEditor.document.uri, range, 'hello world!');
 						}
 						noError = false
 					}
@@ -115,27 +130,7 @@ function deactivate() {
 	console.log("Deactivating")
 }
 
-class Emojizer {
 
-	static providedCodeActionKinds = [
-		vscode.CodeActionKind.QuickFix
-	];
-
-
-	provideCodeActions(document, range) {
-		// It seems like this function is called inside the provider whenever a dianostics problem is raised
-		// the range and document are passed from the diagnostics 
-		const fix = new vscode.CodeAction(`Fix SQLi!`, vscode.CodeActionKind.QuickFix);
-		fix.edit = new vscode.WorkspaceEdit();
-		fix.edit.replace(document.uri, range, 'hello world!');
-
-		return [
-			fix
-		];
-	}
-
-
-}
 
 module.exports = {
 	activate,
