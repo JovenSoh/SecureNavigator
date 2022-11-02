@@ -65,7 +65,9 @@ function activate(context) {
 			if (activeEditor) {
 				const currentLine = activeEditor.selection.active.line
 				const contents = activeEditor.document.lineAt(currentLine)._text
-				
+
+
+				// Detected possible SQLi
 				if (SQLiRegex.test(contents)) {
 
 					const range = new vscode.Range(new vscode.Position(currentLine, 0), new vscode.Position(currentLine, contents.length))
