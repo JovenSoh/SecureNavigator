@@ -1,7 +1,1 @@
-data
 input
-username
-admin
-password
-user
-pass
