@@ -37,7 +37,7 @@ def load_model(latent_dim,input_token_index,target_token_index):
   # Define sampling models
   # Restore the model and construct the encoder and decoder.
   model = keras.models.load_model("s2s")
-
+  
   encoder_inputs = model.input[0]  # input_1
   encoder_outputs, state_h_enc, state_c_enc = model.layers[2].output  # lstm_1
   encoder_states = [state_h_enc, state_c_enc]

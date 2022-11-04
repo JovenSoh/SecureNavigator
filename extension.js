@@ -59,13 +59,13 @@ class Emojizer {
 						let finalData = ""
 						pythonProcess.stdout.on('data', (data) => {
 							finalData += data.toString()
-							//console.log("data: " + data)
+							console.log("data: " + data)
 						});
 						pythonProcess.stderr.on('data', (data) => {
-							//console.log("error: " + data) 
+							console.log("error: " + data) 
 						});
 						pythonProcess.stdout.on("end", (data) => {
-							//console.log("end data: " + finalData)
+							console.log("end data: " + finalData)
 							resolve(finalData)
 						})
 					});
@@ -102,12 +102,12 @@ const raiseSQLiError = async (SQLWarningDecorationType, range, activeEditor, col
 	console.log("Sending " + contents)
 	collection.set(activeEditor.document.uri, [{
 		code: contents,
-		message: 'Possible SQLi detected',
+		message: 'Possible SQL Injection vulnerability detected! Use parameteralized queries to avoid unintended code executions. Suggested template is being generated...',
 		range: range,
 		severity: vscode.DiagnosticSeverity.Warning,
 		source: '',
 		relatedInformation: [
-			new vscode.DiagnosticRelatedInformation(new vscode.Location(activeEditor.document.uri, range), ' has a possible SQLi')
+			new vscode.DiagnosticRelatedInformation(new vscode.Location(activeEditor.document.uri, range), ' is a possible SQLi vulnerability')
 		]
 	}]);
 }
