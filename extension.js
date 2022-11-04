@@ -35,6 +35,13 @@ class Emojizer {
 				let varType = "let "
 				let generatedFix = ""
 
+				for (let i = 0; i < varTypes.length; i++) {
+					if (varTypes[i] === context.diagnostics[0].code.slice(0, varTypes[i].length)) {
+						varType = varTypes[i] + " "
+						break
+					}
+				}
+				
 				if (hashedInput in savedResponses) {
 					generatedFix = savedResponses[hashedInput]
 				}
@@ -42,12 +49,7 @@ class Emojizer {
 					const spawn = require("child_process").spawn;
 					const pythonProcess = spawn('py', ["prediction.py", context.diagnostics[0].code], { cwd: __dirname });
 	
-					for (let i = 0; i < varTypes.length; i++) {
-						if (varTypes[i] === context.diagnostics[0].code.slice(0, varTypes[i].length)) {
-							varType = varTypes[i] + " "
-							break
-						}
-					}
+				
 	
 					pythonProcess.on("error", (err) => {
 						console.log("Error occured in python script")
