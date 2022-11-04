@@ -41,7 +41,7 @@ class Emojizer {
 						break
 					}
 				}
-				
+
 				if (hashedInput in savedResponses) {
 					generatedFix = savedResponses[hashedInput]
 				}
@@ -61,13 +61,13 @@ class Emojizer {
 						let finalData = ""
 						pythonProcess.stdout.on('data', (data) => {
 							finalData += data.toString()
-							console.log("data: " + data)
+							//console.log("data: " + data)
 						});
 						pythonProcess.stderr.on('data', (data) => {
-							console.log("error: " + data) 
+							//console.log("error: " + data) 
 						});
 						pythonProcess.stdout.on("end", (data) => {
-							console.log("end data: " + finalData)
+							//console.log("end data: " + finalData)
 							resolve(finalData)
 						})
 					});
