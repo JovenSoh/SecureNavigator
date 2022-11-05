@@ -15,19 +15,28 @@
       "id": "javascript",
       "extensions": [
         ".js",
+        ".jsx",
+        ".ts"
+      ]
+    },
+    {
+      "id": "html",
+      "extensions": [
+        ".html",
         ".jsx"
       ]
     }
   ],
   "activationEvents": [
-    "onLanguage:javascript"
+    "onLanguage:javascript",
+    "onLanguage:html"
   ],
   "main": "./extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "vulnCheck.runCheck",
-        "title": "Test Command"
+        "command": "vulnCheck.openXSS",
+        "title": "Open DOM Purify page to read more about fixing XSS errors using a simple library"
       }
     ]
   },
