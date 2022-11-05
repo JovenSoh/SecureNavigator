@@ -163,6 +163,8 @@ with open('target_token_index.json', 'r') as fp:
 load_encoder_decoder(latent_dim,num_encoder_tokens,num_decoder_tokens)
 encoder_model, decoder_model, reverse_target_char_index = load_model(latent_dim,input_token_index,target_token_index)
 
+#output_text = main("'SELECT * FROM user WHERE username =' + input")
 output_text = main(sys.argv[1])
+
 
 print(output_text)
