@@ -14,6 +14,9 @@ const { createHash } = require('crypto');
 
 let varTypes = ["let", "const", "var"]
 let savedResponses = {}
+
+const pythonCommand = process.platform === "win32" ? "py" : "python3"
+
 class Emojizer {
 
 	static providedCodeActionKinds = [
@@ -30,7 +33,7 @@ class Emojizer {
 		if (context.diagnostics.length > 0) {
 			if (context.diagnostics[0].code) {
 				const hashedInput = createHash('sha256').update(context.diagnostics[0].code).digest('hex')
-				
+
 				console.log("Received: " + context.diagnostics[0].code)
 				let varType = "let "
 				let generatedFix = ""
@@ -41,33 +44,33 @@ class Emojizer {
 						break
 					}
 				}
-				
+
 				if (hashedInput in savedResponses) {
 					generatedFix = savedResponses[hashedInput]
 				}
 				else {
 					const spawn = require("child_process").spawn;
-					const pythonProcess = spawn('py', ["prediction.py", context.diagnostics[0].code], { cwd: __dirname });
-	
-				
-	
+					const pythonProcess = spawn(pythonCommand, ["prediction.py", context.diagnostics[0].code], { cwd: __dirname });
+
+
+
 					pythonProcess.on("error", (err) => {
 						console.log("Error occured in python script")
 						console.error(err)
 					})
-	
-	
+
+
 					generatedFix = await new Promise((resolve, reject) => {
 						let finalData = ""
 						pythonProcess.stdout.on('data', (data) => {
 							finalData += data.toString()
-							console.log("data: " + data)
+							//console.log("data: " + data)
 						});
 						pythonProcess.stderr.on('data', (data) => {
-							console.log("error: " + data) 
+							//console.log("error: " + data) 
 						});
 						pythonProcess.stdout.on("end", (data) => {
-							console.log("end data: " + finalData)
+							//console.log("end data: " + finalData)
 							resolve(finalData)
 						})
 					});
@@ -77,11 +80,11 @@ class Emojizer {
 					if (size > 50) {
 						savedResponses = {}
 					}
-					
+
 					console.log("final output: " + generatedFix)
 					savedResponses[hashedInput] = generatedFix
 				}
-				
+
 				const fix = new vscode.CodeAction(`Fix SQLi!`, vscode.CodeActionKind.QuickFix);
 				fix.edit = new vscode.WorkspaceEdit();
 
