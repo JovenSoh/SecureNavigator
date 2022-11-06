@@ -39,9 +39,22 @@ class Emojizer {
 				if (code === "xss-error") {
 					console.log("xss-error code-action")
 
-					action = new vscode.CodeAction('Learn more about how to fix XSS errors', vscode.CodeActionKind.QuickFix);
-					action.command = { command: 'vulnCheck.openXSS', title: 'Learn more about how to fix XSS errors', tooltip: 'This will open the DOM-Purify page.' };
-					action.isPreferred = true
+					try {
+						
+						action = new vscode.CodeAction('Example of how to fix XSS errors', vscode.CodeActionKind.QuickFix);
+
+						const activeEditor = vscode.window.activeTextEditor
+						const currentLine = activeEditor.selection.active.line
+						const contents = activeEditor.document.lineAt(currentLine)._text
+
+						action.edit = new vscode.WorkspaceEdit();
+						action.edit.replace(document.uri, range, contents + " = DOMPurify.sanitize(dirty)");
+						action.isPreferred = true
+					}
+					catch (e) {
+						console.log(e)
+					}
+
 				}
 				else {
 					const hashedInput = createHash('sha256').update(context.diagnostics[0].code).digest('hex')
@@ -71,6 +84,8 @@ class Emojizer {
 							console.error(err)
 						})
 
+						// 'INSERT INTO users VALUES (' + data + ')'
+
 
 						generatedFix = await new Promise((resolve, reject) => {
 							let finalData = ""
@@ -79,7 +94,7 @@ class Emojizer {
 								//console.log("data: " + data)
 							});
 							pythonProcess.stderr.on('data', (data) => {
-								//console.log("error: " + data) 
+								console.log("error: " + data) 
 							});
 							pythonProcess.stdout.on("end", (data) => {
 								//console.log("end data: " + finalData)
@@ -97,7 +112,7 @@ class Emojizer {
 						savedResponses[hashedInput] = generatedFix
 					}
 
-					const action = new vscode.CodeAction(`Fix SQLi!`, vscode.CodeActionKind.QuickFix);
+					action = new vscode.CodeAction(`Fix SQLi!`, vscode.CodeActionKind.QuickFix);
 					action.edit = new vscode.WorkspaceEdit();
 
 					action.edit.replace(document.uri, range, varType + generatedFix);
