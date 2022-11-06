@@ -7,6 +7,7 @@ Introducing Secure Navigator, a VSCode Extension inspired by pair programming, w
 - Saves time by notifying developers in the development phase immediately, before any testing is done
 - Provide quick real-time detection and assistance with common vulnerabilities while you develop features
 - Lightweight AI model to generate fixes in seconds <br>
+
 ![image](https://media.discordapp.net/attachments/256313888511885312/1038809598150328320/unknown.png)
 
 ## Set up
